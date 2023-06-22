@@ -2,7 +2,6 @@ import openpyxl
 from docx import Document
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
 from docx.enum.table import WD_ALIGN_VERTICAL
-from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
 from docx.shared import Pt
 
