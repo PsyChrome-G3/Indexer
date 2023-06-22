@@ -71,12 +71,12 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
     # Save the Word document
     doc.save(word_file_path)
 
-    print("Index generated successfully.")
+    print("Your awesome index has been generated successfully!")
 
 
 # Example usage
-excel_file_path = "\\Index.xlsx"
+excel_file_path = "Index.xlsx"
 sheet_name = "Sheet1"
-word_file_path = "\\Document.docx"
+word_file_path = "Awesome-Index.docx"
 
 create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path)
