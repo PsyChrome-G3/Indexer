@@ -1,8 +1,9 @@
 import openpyxl
 from docx import Document
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT, WD_ALIGN_VERTICAL
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import parse_xml
-from docx.shared import Pt, Cm
+from docx.shared import Pt
 
 
 def set_font(document, font_name):
@@ -44,8 +45,30 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
     section = doc.sections[0]
     page_width = section.page_width - section.left_margin - section.right_margin
 
+    # Track the current letter
+    current_letter = ''
+
     # Loop through each sorted row in Excel
     for row in sorted_rows:
+        # Get the first character of the entry1 value
+        entry1_value = row[0] if row[0] else None
+        first_letter = entry1_value[0].upper() if entry1_value else ''
+
+        # Check if a new letter section is starting
+        if first_letter != current_letter:
+            current_letter = first_letter
+
+            # Add a page break before the new letter section
+            doc.add_page_break()
+
+            # Add a header for the letter section
+            header_paragraph = doc.add_paragraph()
+            header_paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            run = header_paragraph.add_run()
+            run.text = current_letter.upper() + current_letter.lower()
+            run.bold = True
+            run.font.size = Pt(36)
+
         # Create a new table in Word with borders
         table = doc.add_table(rows=3, cols=2)
         table.style = 'Table Grid'

@@ -42,11 +42,12 @@ python main.py
 ### To do:
 
 - [X] Adjust the column widths for row one to give the title more room.
-- [ ] Separate the output tables under alphabetical headings.
+- [X] Separate the output tables under alphabetical headings.
 - [ ] Create the front cover.
 
 ### Change Log:
 
+- Alphabetical sections now start on their own page for use with dividers on the final printed product.
 - Index entries will move to next page if not enough room to prevent splitting.
 - Added functionality to set the font of the entire Word document to Arial.
 - Added functionality to sort Excel rows alphabetically based on the first column before inserting them into the Word document.
