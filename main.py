@@ -61,6 +61,7 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
             book_cell.text = f"Book: {str(book_value)}"
             book_cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
             book_cell.paragraphs[0].paragraph_format.alignment = WD_ALIGN_VERTICAL.CENTER
+            book_cell.paragraphs[0].runs[0].bold = True
 
         # Set border properties for the Page and Book cells
         page_cell = table.cell(2, 1)
@@ -73,6 +74,7 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
                 page_cell.text = f"Page: {pages}"
             page_cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
             page_cell.paragraphs[0].paragraph_format.alignment = WD_ALIGN_VERTICAL.CENTER
+            page_cell.paragraphs[0].runs[0].bold = True
 
         # Add an empty paragraph after the table
         doc.add_paragraph()
