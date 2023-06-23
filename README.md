@@ -45,6 +45,14 @@ python main.py
 - [ ] Separate the output tables under alphabetical headings.
 - [ ] Create the front cover.
 
-### Updates
+### Change Log:
 
-- 23 Jun 23 - Changed the layout to make it easier to find the relevant book and page number.
+- Added functionality to set the font of the entire Word document to Arial.
+- Added functionality to sort Excel rows alphabetically based on the first column before inserting them into the Word document.
+- Modified the table layout in the Word document:
+  - Each table now has 3 rows.
+  - The 1st row contains data from column A (Title) in Excel.
+  - The 2nd row contains data from column D (Description) in Excel.
+  - The 3rd row contains two columns: column C (Book) from Excel and column B (Page(s)) from Excel.
+- Added bold formatting to the content of the `{pages}` variable in the `page_cell` of the Word document.
+- Updated the installation guide in Markdown format for Python and the necessary packages.

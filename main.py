@@ -6,6 +6,15 @@ from docx.oxml import parse_xml
 from docx.shared import Pt
 
 
+def set_font(document, font_name):
+    # Set the font of an element and its children in a Word document.
+    styles = document.styles
+    default_style = styles['Normal']
+    default_font = default_style.font
+    default_font.name = font_name
+    default_font.size = Pt(11)  # Set the desired font size
+
+
 def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
     # Load Excel workbook and select worksheet
     workbook = openpyxl.load_workbook(excel_file_path)
@@ -16,6 +25,9 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
 
     # Create a new Word document
     doc = Document()
+
+    # Set the default font to Arial
+    set_font(doc, 'Arial')
 
     # Calculate table width based on page size and margins
     section = doc.sections[0]
