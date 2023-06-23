@@ -42,28 +42,36 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
 
         # Populate the table cells with the data from Excel
         entry1_cell = table.cell(0, 0)
-        entry1_cell.text = str(row[0])  # Entry1
-        entry1_cell.paragraphs[0].runs[0].bold = True
-        entry1_cell.paragraphs[0].runs[0].font.size = Pt(12)
+        entry1_value = row[0] if row[0] else None  # Entry1
+        if entry1_value is not None:
+            entry1_cell.text = str(entry1_value)
+            entry1_cell.paragraphs[0].runs[0].bold = True
+            entry1_cell.paragraphs[0].runs[0].font.size = Pt(12)
 
         # Set border properties for the Page and Book cells
         page_cell = table.cell(0, 1)
-        pages = str(row[1])
-        if ',' in pages or '-' in pages:
-            page_cell.text = f"Pages: {pages}"
-        else:
-            page_cell.text = f"Page: {pages}"
-        page_cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
-        page_cell.paragraphs[0].paragraph_format.alignment = WD_ALIGN_VERTICAL.CENTER
+        pages = row[1] if row[1] else None
+        if pages is not None:
+            pages = str(pages)
+            if ',' in pages or '-' in pages:
+                page_cell.text = f"Pages: {pages}"
+            else:
+                page_cell.text = f"Page: {pages}"
+            page_cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
+            page_cell.paragraphs[0].paragraph_format.alignment = WD_ALIGN_VERTICAL.CENTER
 
         book_cell = table.cell(0, 2)
-        book_cell.text = f"Book: {row[2]}"
-        book_cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
-        book_cell.paragraphs[0].paragraph_format.alignment = WD_ALIGN_VERTICAL.CENTER
+        book_value = row[2] if row[2] else None  # Book
+        if book_value is not None:
+            book_cell.text = f"Book: {str(book_value)}"
+            book_cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
+            book_cell.paragraphs[0].paragraph_format.alignment = WD_ALIGN_VERTICAL.CENTER
 
         description_cell = table.cell(1, 0)
-        description_cell.merge(table.cell(1, 2))
-        description_cell.text = str(row[3])  # Description
+        description_value = row[3] if row[3] else None  # Description
+        if description_value is not None:
+            description_cell.merge(table.cell(1, 2))
+            description_cell.text = str(description_value)
 
         # Add an empty paragraph after the table
         doc.add_paragraph()
