@@ -21,7 +21,7 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
     # Loop through each row in Excel
     for row in worksheet.iter_rows(min_row=2, values_only=True):
         # Create a new table in Word with borders
-        table = doc.add_table(rows=2, cols=3)
+        table = doc.add_table(rows=3, cols=2)
         table.style = 'Table Grid'
 
         # Set border properties for the table
@@ -35,21 +35,35 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
         """
         table._element.xpath('//w:tblPr')[0].append(parse_xml(border_xml))
 
-        # Adjust column widths as percentages
-        column_widths = [int(0.6 * page_width), int(0.2 * page_width), int(0.2 * page_width)]
-        for colIndex, width in enumerate(column_widths):
-            table.columns[colIndex].width = width
+        # # Adjust column widths as percentages
+        # column_widths = [int(0.5 * page_width), int(0.5 * page_width)]
+        # for colIndex, width in enumerate(column_widths):
+        #     table.columns[colIndex].width = width
 
         # Populate the table cells with the data from Excel
         entry1_cell = table.cell(0, 0)
         entry1_value = row[0] if row[0] else None  # Entry1
         if entry1_value is not None:
+            entry1_cell.merge(table.cell(0, 1))
             entry1_cell.text = str(entry1_value)
             entry1_cell.paragraphs[0].runs[0].bold = True
             entry1_cell.paragraphs[0].runs[0].font.size = Pt(12)
 
+        description_cell = table.cell(1, 0)
+        description_value = row[3] if row[3] else None  # Description
+        if description_value is not None:
+            description_cell.merge(table.cell(1, 1))
+            description_cell.text = str(description_value)
+
+        book_cell = table.cell(2, 0)
+        book_value = row[2] if row[2] else None  # Book
+        if book_value is not None:
+            book_cell.text = f"Book: {str(book_value)}"
+            book_cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
+            book_cell.paragraphs[0].paragraph_format.alignment = WD_ALIGN_VERTICAL.CENTER
+
         # Set border properties for the Page and Book cells
-        page_cell = table.cell(0, 1)
+        page_cell = table.cell(2, 1)
         pages = row[1] if row[1] else None
         if pages is not None:
             pages = str(pages)
@@ -59,19 +73,6 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
                 page_cell.text = f"Page: {pages}"
             page_cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
             page_cell.paragraphs[0].paragraph_format.alignment = WD_ALIGN_VERTICAL.CENTER
-
-        book_cell = table.cell(0, 2)
-        book_value = row[2] if row[2] else None  # Book
-        if book_value is not None:
-            book_cell.text = f"Book: {str(book_value)}"
-            book_cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
-            book_cell.paragraphs[0].paragraph_format.alignment = WD_ALIGN_VERTICAL.CENTER
-
-        description_cell = table.cell(1, 0)
-        description_value = row[3] if row[3] else None  # Description
-        if description_value is not None:
-            description_cell.merge(table.cell(1, 2))
-            description_cell.text = str(description_value)
 
         # Add an empty paragraph after the table
         doc.add_paragraph()
