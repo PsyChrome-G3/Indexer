@@ -11,6 +11,9 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
     workbook = openpyxl.load_workbook(excel_file_path)
     worksheet = workbook[sheet_name]
 
+    # Sort Excel rows alphabetically based on the first column
+    sorted_rows = sorted(worksheet.iter_rows(min_row=2, values_only=True), key=lambda row: row[0])
+
     # Create a new Word document
     doc = Document()
 
@@ -18,8 +21,8 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
     section = doc.sections[0]
     page_width = section.page_width - section.left_margin - section.right_margin
 
-    # Loop through each row in Excel
-    for row in worksheet.iter_rows(min_row=2, values_only=True):
+    # Loop through each sorted row in Excel
+    for row in sorted_rows:
         # Create a new table in Word with borders
         table = doc.add_table(rows=3, cols=2)
         table.style = 'Table Grid'
@@ -34,11 +37,6 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
             </w:tblBorders>
         """
         table._element.xpath('//w:tblPr')[0].append(parse_xml(border_xml))
-
-        # # Adjust column widths as percentages
-        # column_widths = [int(0.5 * page_width), int(0.5 * page_width)]
-        # for colIndex, width in enumerate(column_widths):
-        #     table.columns[colIndex].width = width
 
         # Populate the table cells with the data from Excel
         entry1_cell = table.cell(0, 0)
