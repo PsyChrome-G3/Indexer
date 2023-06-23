@@ -1,9 +1,8 @@
 import openpyxl
 from docx import Document
-from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
-from docx.enum.table import WD_ALIGN_VERTICAL
+from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT, WD_ALIGN_VERTICAL
 from docx.oxml import parse_xml
-from docx.shared import Pt
+from docx.shared import Pt, Cm
 
 
 def set_font(document, font_name):
@@ -13,6 +12,18 @@ def set_font(document, font_name):
     default_font = default_style.font
     default_font.name = font_name
     default_font.size = Pt(11)  # Set the desired font size
+
+
+def set_table_borders(table):
+    border_xml = """
+        <w:tblBorders xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+            <w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+            <w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+            <w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+            <w:bottom w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+        </w:tblBorders>
+    """
+    table._element.xpath('//w:tblPr')[0].append(parse_xml(border_xml))
 
 
 def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
@@ -40,15 +51,13 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
         table.style = 'Table Grid'
 
         # Set border properties for the table
-        border_xml = """
-            <w:tblBorders xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-                <w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/>
-                <w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/>
-                <w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/>
-                <w:bottom w:val="single" w:sz="4" w:space="0" w:color="auto"/>
-            </w:tblBorders>
-        """
-        table._element.xpath('//w:tblPr')[0].append(parse_xml(border_xml))
+        set_table_borders(table)
+
+        # Set "Keep with next" option for the table
+        tags = table._element.xpath('//w:tr[position() < last()]/w:tc/w:p')
+        for tag in tags:
+            ppr = tag.get_or_add_pPr()
+            ppr.keepNext_val = True
 
         # Populate the table cells with the data from Excel
         entry1_cell = table.cell(0, 0)
@@ -85,6 +94,9 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
             page_cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
             page_cell.paragraphs[0].paragraph_format.alignment = WD_ALIGN_VERTICAL.CENTER
             page_cell.paragraphs[0].runs[0].bold = True
+
+        # Get the available space on the current page
+        available_space = section.page_height - section.top_margin - section.bottom_margin - section.header_distance - section.footer_distance
 
         # Add an empty paragraph after the table
         doc.add_paragraph()
