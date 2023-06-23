@@ -47,6 +47,7 @@ python main.py
 
 ### Change Log:
 
+- Index entries will move to next page if not enough room to prevent splitting.
 - Added functionality to set the font of the entire Word document to Arial.
 - Added functionality to sort Excel rows alphabetically based on the first column before inserting them into the Word document.
 - Modified the table layout in the Word document:
