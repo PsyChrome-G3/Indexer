@@ -5,7 +5,6 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import parse_xml
 from docx.shared import Pt
 
-
 def set_font(document, font_name):
     # Set the font of an element and its children in a Word document.
     styles = document.styles
@@ -13,7 +12,6 @@ def set_font(document, font_name):
     default_font = default_style.font
     default_font.name = font_name
     default_font.size = Pt(11)  # Set the desired font size
-
 
 def set_table_borders(table):
     border_xml = """
@@ -26,13 +24,12 @@ def set_table_borders(table):
     """
     table._element.xpath('//w:tblPr')[0].append(parse_xml(border_xml))
 
-
 def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
     # Load Excel workbook and select worksheet
     workbook = openpyxl.load_workbook(excel_file_path)
     worksheet = workbook[sheet_name]
 
-    # Sort Excel rows alphabetically based on the first column
+    # Sort Excel rows alphabetically based on the first column, ignoring case
     sorted_rows = sorted(worksheet.iter_rows(min_row=2, values_only=True), key=lambda row: row[0].casefold() if row[0] else '')
 
     # Create a new Word document
@@ -70,7 +67,7 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
             run.font.size = Pt(36)
 
         # Create a new table in Word with borders
-        table = doc.add_table(rows=3, cols=2)
+        table = doc.add_table(rows=2 if row[3] else 1, cols=2)
         table.style = 'Table Grid'
 
         # Set border properties for the table
@@ -91,13 +88,21 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
             entry1_cell.paragraphs[0].runs[0].bold = True
             entry1_cell.paragraphs[0].runs[0].font.size = Pt(12)
 
-        description_cell = table.cell(1, 0)
-        description_value = row[3] if row[3] else None  # Description
-        if description_value is not None:
-            description_cell.merge(table.cell(1, 1))
-            description_cell.text = str(description_value)
+        if row[3]:  # If there is a description
+            description_cell = table.cell(1, 0)
+            description_value = row[3] if row[3] else None  # Description
+            if description_value is not None:
+                description_cell.merge(table.cell(1, 1))
+                description_cell.text = str(description_value)
 
-        book_cell = table.cell(2, 0)
+        # Create a new table for Book and Page details
+        table_details = doc.add_table(rows=1, cols=2)
+        table_details.style = 'Table Grid'
+
+        # Set border properties for the table
+        set_table_borders(table_details)
+
+        book_cell = table_details.cell(0, 0)
         book_value = row[2] if row[2] else None  # Book
         if book_value is not None:
             book_cell.text = f"Book: {str(book_value)}"
@@ -106,7 +111,7 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
             book_cell.paragraphs[0].runs[0].bold = True
 
         # Set border properties for the Page and Book cells
-        page_cell = table.cell(2, 1)
+        page_cell = table_details.cell(0, 1)
         pages = row[1] if row[1] else None
         if pages is not None:
             pages = str(pages)
@@ -118,17 +123,13 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
             page_cell.paragraphs[0].paragraph_format.alignment = WD_ALIGN_VERTICAL.CENTER
             page_cell.paragraphs[0].runs[0].bold = True
 
-        # Get the available space on the current page
-        available_space = section.page_height - section.top_margin - section.bottom_margin - section.header_distance - section.footer_distance
-
-        # Add an empty paragraph after the table
+        # Add an empty paragraph after the tables
         doc.add_paragraph()
 
     # Save the Word document
     doc.save(word_file_path)
 
     print("Your awesome index has been generated successfully!")
-
 
 # Example usage
 excel_file_path = "Index.xlsx"
