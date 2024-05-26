@@ -3,9 +3,10 @@ from docx import Document
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT, WD_ALIGN_VERTICAL
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import parse_xml
-from docx.shared import Pt, Inches
+from docx.shared import Pt
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
+from tqdm import tqdm
 
 def set_font(document, font_name):
     # Set the font of an element and its children in a Word document.
@@ -77,8 +78,8 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
     section = doc.sections[0]
     available_height = section.page_height - section.top_margin - section.bottom_margin
 
-    # Loop through each sorted row in Excel
-    for row in sorted_rows:
+    # Loop through each sorted row in Excel with progress bar
+    for row in tqdm(sorted_rows, desc="Processing index"):
         # Get the first character of the entry1 value
         entry1_value = row[0] if row[0] else None
         first_letter = entry1_value[0].upper() if entry1_value else ''
