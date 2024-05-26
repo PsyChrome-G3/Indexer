@@ -33,7 +33,7 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
     worksheet = workbook[sheet_name]
 
     # Sort Excel rows alphabetically based on the first column
-    sorted_rows = sorted(worksheet.iter_rows(min_row=2, values_only=True), key=lambda row: row[0])
+    sorted_rows = sorted(worksheet.iter_rows(min_row=2, values_only=True), key=lambda row: row[0].casefold() if row[0] else '')
 
     # Create a new Word document
     doc = Document()
