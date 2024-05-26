@@ -7,6 +7,7 @@ from docx.shared import Pt
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 from tqdm import tqdm
+import time
 
 def set_font(document, font_name):
     # Set the font of an element and its children in a Word document.
@@ -59,6 +60,8 @@ def get_table_height(table):
     return height / 72  # Convert points to inches
 
 def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
+    start_time = time.time()  # Record the start time
+
     # Load Excel workbook and select worksheet
     workbook = openpyxl.load_workbook(excel_file_path)
     worksheet = workbook[sheet_name]
@@ -79,7 +82,7 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
     available_height = section.page_height - section.top_margin - section.bottom_margin
 
     # Loop through each sorted row in Excel with progress bar
-    for row in tqdm(sorted_rows, desc="Processing index"):
+    for row in tqdm(sorted_rows, desc="Processing rows"):
         # Get the first character of the entry1 value
         entry1_value = row[0] if row[0] else None
         first_letter = entry1_value[0].upper() if entry1_value else ''
@@ -162,7 +165,12 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
     # Save the Word document
     doc.save(word_file_path)
 
-    print("Your awesome index has been generated successfully!")
+    end_time = time.time()  # Record the end time
+    elapsed_time = end_time - start_time  # Calculate the elapsed time
+    minutes, seconds = divmod(elapsed_time, 60)
+    time_str = f"{int(minutes)} mins {seconds:.2f} secs" if minutes else f"{seconds:.2f} secs"
+
+    print(f"Your awesome index has been generated successfully! It only took {time_str}.")
 
 # Example usage
 excel_file_path = "Index.xlsx"
