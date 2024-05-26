@@ -3,7 +3,9 @@ from docx import Document
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT, WD_ALIGN_VERTICAL
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import parse_xml
-from docx.shared import Pt
+from docx.shared import Pt, Inches
+from docx.oxml.ns import qn
+from docx.oxml import OxmlElement
 
 def set_font(document, font_name):
     # Set the font of an element and its children in a Word document.
@@ -24,6 +26,37 @@ def set_table_borders(table):
     """
     table._element.xpath('//w:tblPr')[0].append(parse_xml(border_xml))
 
+def prevent_table_split(table):
+    # Prevent the table from being split across pages
+    tbl = table._element
+    tblPr = tbl.xpath("w:tblPr")
+    if not tblPr:
+        tblPr = OxmlElement('w:tblPr')
+        tbl.insert(0, tblPr)
+    else:
+        tblPr = tblPr[0]
+
+    cantSplit = OxmlElement('w:cantSplit')
+    tblPr.append(cantSplit)
+
+    for row in table.rows:
+        for cell in row.cells:
+            for paragraph in cell.paragraphs:
+                paragraph.paragraph_format.keep_with_next = True
+                paragraph.paragraph_format.keep_together = True
+
+def get_table_height(table):
+    # Estimate the height of the table by summing the heights of the rows
+    height = 0
+    for row in table.rows:
+        row_height = 0
+        for cell in row.cells:
+            for paragraph in cell.paragraphs:
+                for run in paragraph.runs:
+                    row_height += run.font.size.pt if run.font.size else 11
+        height += row_height
+    return height / 72  # Convert points to inches
+
 def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
     # Load Excel workbook and select worksheet
     workbook = openpyxl.load_workbook(excel_file_path)
@@ -38,12 +71,11 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
     # Set the default font to Arial
     set_font(doc, 'Arial')
 
-    # Calculate table width based on page size and margins
-    section = doc.sections[0]
-    page_width = section.page_width - section.left_margin - section.right_margin
-
     # Track the current letter
     current_letter = ''
+
+    section = doc.sections[0]
+    available_height = section.page_height - section.top_margin - section.bottom_margin
 
     # Loop through each sorted row in Excel
     for row in sorted_rows:
@@ -73,12 +105,6 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
         # Set border properties for the table
         set_table_borders(table)
 
-        # Set "Keep with next" option for the table
-        tags = table._element.xpath('//w:tr[position() < last()]/w:tc/w:p')
-        for tag in tags:
-            ppr = tag.get_or_add_pPr()
-            ppr.keepNext_val = True
-
         # Populate the table cells with the data from Excel
         entry1_cell = table.cell(0, 0)
         entry1_value = row[0] if row[0] else None  # Entry1
@@ -94,6 +120,12 @@ def create_tables_from_excel_rows(excel_file_path, sheet_name, word_file_path):
             if description_value is not None:
                 description_cell.merge(table.cell(1, 1))
                 description_cell.text = str(description_value)
+
+        table_height = get_table_height(table)
+        if table_height > available_height:
+            doc.add_page_break()
+
+        prevent_table_split(table)  # Prevent table from splitting across pages
 
         # Create a new table for Book and Page details
         table_details = doc.add_table(rows=1, cols=2)
